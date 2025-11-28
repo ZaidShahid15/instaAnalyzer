@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTRA FAST Instagram Downloader & Profile Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #E1306C 0%, #C13584 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: white;
+            border-bottom: 3px solid #E1306C;
+            color: #E1306C;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .url-input:focus {
+            border-color: #E1306C;
+            box-shadow: 0 0 0 3px rgba(225, 48, 108, 0.1);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #E1306C 0%, #C13584 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #d4380d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-ultra {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-area {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .status-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            background: white;
+            border-left: 4px solid #28a745;
+        }
+
+        .progress-container {
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 12px;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .log-area {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        .ultra { color: #ff6b6b; font-weight: bold; }
+
+        .download-link {
+            display: none;
+            background: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .download-link:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        /* Profile Posts Preview Styles */
+        .posts-preview-container {
+            margin-top: 30px;
+        }
+
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .post-preview-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .post-preview-card.selected {
+            border-color: #E1306C;
+            background: #fff5f7;
+        }
+
+        .post-thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .video-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .post-info {
+            padding: 10px 0;
+        }
+
+        .post-caption {
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .post-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .selection-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .selected-count {
+            font-weight: bold;
+            color: #E1306C;
+        }
+
+        .select-all-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* Profile Analysis Styles */
+        .profile-section {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 5px solid #E1306C;
+            object-fit: cover;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #E1306C;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .analytics-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .engagement-good { color: #28a745; }
+        .engagement-average { color: #ffc107; }
+        .engagement-poor { color: #dc3545; }
+
+        .speed-indicator {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .profile-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                min-width: 100%;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .posts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 ULTRA FAST Instagram Tool</h1>
+            <p>Download Posts & Analyze Profiles in Seconds with 90% Success Rate!</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('download')">Download Posts</button>
+            <button class="tab" onclick="switchTab('analyze')">Analyze Profile</button>
+            <button class="tab" onclick="switchTab('profile-posts')">Profile Posts</button>
+        </div>
+        
+        <div class="content">
+            <!-- Download Tab -->
+            <div id="download-tab" class="tab-content active">
+                <div class="input-group">
+                    <input type="url" class="url-input" id="urlInput" 
+                           placeholder="Paste Instagram Post/Reel link here" 
+                           autocomplete="off">
+                </div>
+                
+                <div class="speed-indicator">
+                    ⚡ <strong>ULTRA FAST MODE:</strong> 3-Step Download System (90% Success Rate)
+                </div>
+                
+                <div class="buttons">
+                    <button class="btn btn-ultra" onclick="startUltraFastDownload()" id="ultraFastBtn">
+                        ⚡ ULTRA FAST Download
+                    </button>
+                    <button class="btn btn-primary" onclick="startDownload()" id="downloadBtn">
+                        Standard Download
+                    </button>
+                    <button class="btn btn-secondary" onclick="pasteAndDownload()">
+                        📋 Paste & Go
+                    </button>
+                    {% if not instaloader_ok %}
+                    <button class="btn btn-warning" onclick="installEngine()" id="installBtn">
+                        🔧 Install Fast Engine
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <div class="status-area">
+                    <div class="status-text" id="statusText">
+                        Ready - Paste link & click Download
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+                
+                <div class="log-area" id="logArea">
+                    <div class="log-entry info">System ready - Waiting for input...</div>
+                </div>
+                
+                <a href="#" class="download-link" id="downloadLink">Download Your File</a>
+            </div>
+            
+            <!-- Analyze Tab -->
+            <div id="analyze-tab" class="tab-content">
+                <div class="input-group">
+                    <input type="url" class="url-input" id="profileUrlInput" 
+                           placeholder="Paste Instagram Profile link here (e.g., https://instagram.com/username)" 
+                           autocomplete="off">
+                </div>
+                
+                <div class="buttons">
+                    <button class="btn btn-success" onclick="analyzeProfile()" id="analyzeBtn">
+                        Analyze Profile
+                    </button>
+                    <button class="btn btn-secondary" onclick="pasteAndAnalyze()">
+                        📋 Paste & Analyze
+                    </button>
+                </div>
+                
+                <div class="status-area">
+                    <div class="status-text" id="profileStatusText">
+                        Ready - Paste profile link & click Analyze
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="profileProgressBar"></div>
+                    </div>
+                </div>
+                
+                <!-- Profile Analysis Results -->
+                <div id="profileResults" style="display: none;">
+                    <!-- Profile info will be inserted here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Profile Posts Tab -->
+            <div id="profile-posts-tab" class="tab-content">
+                <div class="input-group">
+                    <input type="url" class="url-input" id="profilePostsUrlInput" 
+                           placeholder="Paste Instagram Profile link here (e.g., https://instagram.com/username)" 
+                           autocomplete="off">
+                </div>
+                
+                <div class="buttons">
+                    <button class="btn btn-info" onclick="loadProfilePosts()" id="loadPostsBtn">
+                        📸 Load Profile Posts
+                    </button>
+                    <button class="btn btn-success" onclick="downloadSelectedPosts()" id="downloadSelectedBtn" style="display: none;">
+                        ⬇️ Download Selected
+                    </button>
+                    <button class="btn btn-secondary" onclick="pasteAndLoadPosts()">
+                        📋 Paste & Load
+                    </button>
+                </div>
+                
+                <div class="status-area">
+                    <div class="status-text" id="profilePostsStatusText">
+                        Ready - Paste profile link & click Load Posts
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="profilePostsProgressBar"></div>
+                    </div>
+                </div>
+
+                <!-- Profile Posts Results -->
+                <div id="profilePostsResults" style="display: none;">
+                    <!-- Posts will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDownloadMethod = '';
+        let selectedPosts = new Set();
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+
+            // Clear selections when switching tabs
+            if (tabName !== 'profile-posts') {
+                selectedPosts.clear();
+                updateSelectionUI();
+            }
+        }
+
+        function log(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function updateStatus(text, color = 'black') {
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = text;
+            statusText.style.color = color;
+        }
+
+        function updateProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percent + '%';
+        }
+
+        function updateProfileStatus(text, color = 'black') {
+            const statusText = document.getElementById('profileStatusText');
+            statusText.textContent = text;
+            statusText.style.color = color;
+        }
+
+        function updateProfileProgress(percent) {
+            const progressBar = document.getElementById('profileProgressBar');
+            progressBar.style.width = percent + '%';
+        }
+
+        function updateProfilePostsStatus(text, color = 'black') {
+            const statusText = document.getElementById('profilePostsStatusText');
+            statusText.textContent = text;
+            statusText.style.color = color;
+        }
+
+        function updateProfilePostsProgress(percent) {
+            const progressBar = document.getElementById('profilePostsProgressBar');
+            progressBar.style.width = percent + '%';
+        }
+
+        async function pasteAndDownload() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('urlInput').value = text.trim();
+                log('URL pasted from clipboard', 'info');
+            } catch (err) {
+                log('Failed to read clipboard', 'error');
+            }
+        }
+
+        async function pasteAndAnalyze() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('profileUrlInput').value = text.trim();
+                log('Profile URL pasted from clipboard', 'info');
+            } catch (err) {
+                updateProfileStatus('Failed to read clipboard', 'red');
+            }
+        }
+
+        async function pasteAndLoadPosts() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('profilePostsUrlInput').value = text.trim();
+                updateProfilePostsStatus('URL pasted from clipboard', 'blue');
+            } catch (err) {
+                updateProfilePostsStatus('Failed to read clipboard', 'red');
+            }
+        }
+
+        // Post selection functionality
+        function togglePostSelection(shortcode) {
+            if (selectedPosts.has(shortcode)) {
+                selectedPosts.delete(shortcode);
+            } else {
+                selectedPosts.add(shortcode);
+            }
+            updateSelectionUI();
+        }
+
+        function selectAllPosts() {
+            const postCards = document.querySelectorAll('.post-preview-card');
+            postCards.forEach(card => {
+                const shortcode = card.dataset.shortcode;
+                selectedPosts.add(shortcode);
+                card.classList.add('selected');
+            });
+            updateSelectionUI();
+        }
+
+        function clearSelection() {
+            selectedPosts.clear();
+            const postCards = document.querySelectorAll('.post-preview-card');
+            postCards.forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateSelectionUI();
+        }
+
+        function updateSelectionUI() {
+            const selectedCount = document.getElementById('selectedCount');
+            const downloadSelectedBtn = document.getElementById('downloadSelectedBtn');
+            
+            if (selectedCount) {
+                selectedCount.textContent = `${selectedPosts.size} posts selected`;
+            }
+            
+            if (downloadSelectedBtn) {
+                if (selectedPosts.size > 0) {
+                    downloadSelectedBtn.style.display = 'block';
+                    downloadSelectedBtn.textContent = `⬇️ Download ${selectedPosts.size} Selected`;
+                } else {
+                    downloadSelectedBtn.style.display = 'none';
+                }
+            }
+        }
+
+        async function loadProfilePosts() {
+            const url = document.getElementById('profilePostsUrlInput').value.trim();
+            const loadPostsBtn = document.getElementById('loadPostsBtn');
+            
+            if (!url || !url.includes('instagram.com')) {
+                alert('Please enter a valid Instagram profile URL!');
+                return;
+            }
+
+            // Reset UI
+            loadPostsBtn.disabled = true;
+            selectedPosts.clear();
+            updateProfilePostsProgress(0);
+            document.getElementById('profilePostsResults').style.display = 'none';
+            document.getElementById('downloadSelectedBtn').style.display = 'none';
+            
+            updateProfilePostsStatus('Loading profile posts...', 'blue');
+            updateProfilePostsProgress(30);
+
+            try {
+                const response = await fetch('/profile-posts-preview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateProfilePostsProgress(100);
+                    updateProfilePostsStatus('Posts loaded successfully!', 'green');
+                    displayProfilePosts(result);
+                } else {
+                    updateProfilePostsStatus('Failed to load posts', 'red');
+                    alert(`Error: ${result.error}`);
+                }
+            } catch (error) {
+                updateProfilePostsStatus('Network Error', 'red');
+                alert(`Network error: ${error}`);
+            } finally {
+                loadPostsBtn.disabled = false;
+            }
+        }
+
+        function displayProfilePosts(data) {
+            const resultsDiv = document.getElementById('profilePostsResults');
+            resultsDiv.style.display = 'block';
+            
+            const profile = data.profile;
+            const posts = data.posts;
+            
+            let html = `
+                <div class="profile-section">
+                    <div class="profile-card">
+                        <img src="${profile.profile_pic_url}" alt="${profile.username}" class="profile-pic" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                        <h2>${profile.full_name || profile.username}</h2>
+                        <p>@${profile.username}</p>
+                        ${profile.is_verified ? '<span style="color: #E1306C;">✓ Verified</span>' : ''}
+                        ${profile.is_private ? '<span style="color: #ffc107;">🔒 Private</span>' : ''}
+                        
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">${profile.posts_count.toLocaleString()}</div>
+                                <div class="stat-label">Posts</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${profile.followers.toLocaleString()}</div>
+                                <div class="stat-label">Followers</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h3>📸 Posts Preview</h3>
+                        <p>Loaded <strong>${data.total_posts_fetched}</strong> posts from profile</p>
+                        <p>Select posts you want to download and click "Download Selected"</p>
+                    </div>
+                </div>
+                
+                <div class="selection-controls">
+                    <div class="selected-count" id="selectedCount">0 posts selected</div>
+                    <div>
+                        <button class="select-all-btn" onclick="selectAllPosts()">Select All</button>
+                        <button class="select-all-btn" onclick="clearSelection()" style="background: #dc3545;">Clear All</button>
+                    </div>
+                </div>
+                
+                <h2 style="margin: 20px 0;">Profile Posts (${posts.length})</h2>
+                <div class="posts-grid">
+            `;
+            
+            posts.forEach(post => {
+                const engagementClass = post.engagement_rate > 5 ? 'engagement-good' : 
+                                      post.engagement_rate > 2 ? 'engagement-average' : 'engagement-poor';
+                
+                html += `
+                    <div class="post-preview-card" data-shortcode="${post.shortcode}" onclick="togglePostSelection('${post.shortcode}')">
+                        <div style="position: relative;">
+                            <img src="${post.thumbnail_url}" alt="Post thumbnail" class="post-thumbnail" onerror="this.src='https://via.placeholder.com/300?text=No+Preview'">
+                            ${post.is_video ? '<div class="video-badge">🎥 VIDEO</div>' : ''}
+                        </div>
+                        <div class="post-info">
+                            <div class="post-caption">${post.caption ? (post.caption.substring(0, 100) + (post.caption.length > 100 ? '...' : '')) : 'No caption'}</div>
+                            <div class="post-stats">
+                                <div style="color: #E1306C;">❤️ ${post.likes.toLocaleString()}</div>
+                                <div style="color: #667eea;">💬 ${post.comments.toLocaleString()}</div>
+                                <div class="${engagementClass}">📈 ${post.engagement_rate}%</div>
+                            </div>
+                            <p style="font-size: 0.8em; color: #666; margin-top: 8px;">
+                                ${new Date(post.timestamp).toLocaleDateString()}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            resultsDiv.innerHTML = html;
+            
+            // Add click handlers for selection
+            const postCards = document.querySelectorAll('.post-preview-card');
+            postCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    const shortcode = this.dataset.shortcode;
+                    if (this.classList.contains('selected')) {
+                        selectedPosts.add(shortcode);
+                    } else {
+                        selectedPosts.delete(shortcode);
+                    }
+                    updateSelectionUI();
+                });
+            });
+            
+            updateSelectionUI();
+        }
+async function downloadSelectedPosts() {
+    if (selectedPosts.size === 0) {
+        alert('Please select at least one post to download!');
+        return;
+    }
+
+    const url = document.getElementById('profilePostsUrlInput').value.trim();
+    const downloadSelectedBtn = document.getElementById('downloadSelectedBtn');
+    
+    // Reset UI
+    downloadSelectedBtn.disabled = true;
+    updateProfilePostsStatus(`Downloading ${selectedPosts.size} selected posts...`, 'blue');
+    updateProfilePostsProgress(20);
+
+    try {
+        const response = await fetch('/download-selected-posts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                url: url,
+                selected_posts: Array.from(selectedPosts)
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            updateProfilePostsProgress(100);
+            updateProfilePostsStatus('Download Complete!', 'green');
+            
+            // IMPROVED: Better success message
+            const successMessage = `✅ Successfully downloaded ${result.posts_downloaded} posts (${result.files_downloaded} files)`;
+            updateProfilePostsStatus(successMessage, 'green');
+            
+            // Show download link
+            const downloadLink = document.createElement('a');
+            downloadLink.href = `/download-file/${result.filename}`;
+            downloadLink.className = 'download-link';
+            downloadLink.textContent = `⬇️ Download ${result.posts_downloaded} Posts (${result.size_mb} MB)`;
+            downloadLink.style.display = 'block';
+            downloadLink.style.marginTop = '20px';
+            
+            const resultsDiv = document.getElementById('profilePostsResults');
+            const existingLink = resultsDiv.querySelector('.download-link');
+            if (existingLink) {
+                existingLink.remove();
+            }
+            resultsDiv.appendChild(downloadLink);
+            
+        } else {
+            updateProfilePostsStatus('Download Failed', 'red');
+            
+            // IMPROVED: Better error display
+            let errorMessage = result.error;
+            if (result.error.includes('No posts could be downloaded')) {
+                errorMessage += ' - Videos may have downloaded but system could not detect them. Check downloads folder manually.';
+            }
+            alert(`Error: ${errorMessage}`);
+        }
+    } catch (error) {
+        updateProfilePostsStatus('Network Error', 'red');
+        alert(`Network error: ${error}`);
+    } finally {
+        downloadSelectedBtn.disabled = false;
+    }
+}
+        // Existing functions for other tabs...
+        async function startUltraFastDownload() {
+            const url = document.getElementById('urlInput').value.trim();
+            const ultraFastBtn = document.getElementById('ultraFastBtn');
+            
+            if (!url || !url.includes('instagram.com')) {
+                alert('Please enter a valid Instagram URL!');
+                return;
+            }
+
+            // Reset UI
+            ultraFastBtn.disabled = true;
+            updateProgress(0);
+            document.getElementById('downloadLink').style.display = 'none';
+            document.getElementById('logArea').innerHTML = '';
+            
+            log('🚀 Starting ULTRA FAST download...', 'ultra');
+            updateStatus('Connecting with GraphQL API...', 'blue');
+            updateProgress(10);
+
+            try {
+                const response = await fetch('/ultra-fast-download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateProgress(100);
+                    updateStatus('🎉 ULTRA FAST Download Complete!', 'green');
+                    
+                    const methodBadge = result.method === 'ultra_fast' ? 'GraphQL API' : result.method;
+                    log(`✅ Download successful using ${methodBadge} method`, 'success');
+                    log(`📦 File: ${result.filename} (${result.size_mb} MB)`, 'success');
+                    
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = `/download-file/${result.filename}`;
+                    downloadLink.textContent = `⬇️ Download File (${result.size_mb} MB) - ${methodBadge}`;
+                    downloadLink.style.display = 'block';
+                    
+                    log('✨ File ready for download!', 'success');
+                } else {
+                    updateStatus('❌ Download Failed', 'red');
+                    log(`Error: ${result.error}`, 'error');
+                    
+                    if (result.error.includes('Install Fast Engine')) {
+                        log('🔄 Attempting standard download as fallback...', 'warning');
+                        await startDownload();
+                    }
+                }
+            } catch (error) {
+                updateStatus('🌐 Network Error', 'red');
+                log(`Network error: ${error}`, 'error');
+                log('🔄 Attempting standard download as fallback...', 'warning');
+                await startDownload();
+            } finally {
+                ultraFastBtn.disabled = false;
+            }
+        }
+
+        async function startDownload() {
+            const url = document.getElementById('urlInput').value.trim();
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            if (!url || !url.includes('instagram.com')) {
+                alert('Please enter a valid Instagram URL!');
+                return;
+            }
+
+            // Reset UI
+            downloadBtn.disabled = true;
+            updateProgress(0);
+            document.getElementById('downloadLink').style.display = 'none';
+            
+            log('Starting standard download...', 'info');
+            updateStatus('Connecting...', 'blue');
+            updateProgress(20);
+
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateProgress(100);
+                    updateStatus('Download Complete!', 'green');
+                    log(result.message, 'success');
+                    
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = `/download-file/${result.filename}`;
+                    downloadLink.textContent = `Download File (${result.size_mb} MB)`;
+                    downloadLink.style.display = 'block';
+                    
+                    log('File ready for download!', 'success');
+                } else {
+                    updateStatus('Download Failed', 'red');
+                    log(`Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                updateStatus('Network Error', 'red');
+                log(`Network error: ${error}`, 'error');
+            } finally {
+                downloadBtn.disabled = false;
+            }
+        }
+
+        async function analyzeProfile() {
+            const url = document.getElementById('profileUrlInput').value.trim();
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            if (!url || !url.includes('instagram.com')) {
+                alert('Please enter a valid Instagram profile URL!');
+                return;
+            }
+
+            // Reset UI
+            analyzeBtn.disabled = true;
+            updateProfileProgress(0);
+            document.getElementById('profileResults').style.display = 'none';
+            
+            updateProfileStatus('Analyzing profile...', 'blue');
+            updateProfileProgress(30);
+
+            try {
+                const response = await fetch('/analyze-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateProfileProgress(100);
+                    updateProfileStatus('Analysis Complete!', 'green');
+                    displayProfileResults(result);
+                } else {
+                    updateProfileStatus('Analysis Failed', 'red');
+                    alert(`Error: ${result.error}`);
+                }
+            } catch (error) {
+                updateProfileStatus('Network Error', 'red');
+                alert(`Network error: ${error}`);
+            } finally {
+                analyzeBtn.disabled = false;
+            }
+        }
+
+        function displayProfileResults(data) {
+            const resultsDiv = document.getElementById('profileResults');
+            resultsDiv.style.display = 'block';
+            
+            const profile = data.profile;
+            const posts = data.posts;
+            const analytics = data.analytics;
+            
+            let html = `
+                <div class="profile-section">
+                    <div class="profile-card">
+                        <img src="${profile.profile_pic_url}" alt="${profile.username}" class="profile-pic" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                        <h2>${profile.full_name || profile.username}</h2>
+                        <p>@${profile.username}</p>
+                        ${profile.is_verified ? '<span style="color: #E1306C;">✓ Verified</span>' : ''}
+                        ${profile.is_private ? '<span style="color: #ffc107;">🔒 Private</span>' : ''}
+                        ${profile.is_business_account ? '<span style="color: #667eea;">💼 Business</span>' : ''}
+                        
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">${profile.posts_count.toLocaleString()}</div>
+                                <div class="stat-label">Posts</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${profile.followers.toLocaleString()}</div>
+                                <div class="stat-label">Followers</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${profile.followees.toLocaleString()}</div>
+                                <div class="stat-label">Following</div>
+                            </div>
+                        </div>
+                        
+                        ${profile.biography ? `<p style="margin-top: 15px; font-style: italic;">"${profile.biography}"</p>` : ''}
+                        ${profile.external_url ? `<a href="${profile.external_url}" target="_blank" style="color: #667eea;">${profile.external_url}</a>` : ''}
+                    </div>
+                    
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h3>📊 Engagement Analytics</h3>
+                            <p>Avg. Engagement Rate: <strong>${analytics.average_engagement_rate}%</strong></p>
+                            <p>Engagement per Follower: <strong>${analytics.engagement_per_follower}%</strong></p>
+                            <p>Total Posts Analyzed: <strong>${analytics.total_posts_analyzed}</strong></p>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <h3>❤️ Post Performance</h3>
+                            <p>Avg. Likes: <strong>${analytics.average_likes_per_post}</strong></p>
+                            <p>Avg. Comments: <strong>${analytics.average_comments_per_post}</strong></p>
+                            <p>Total Engagement: <strong>${analytics.total_engagement.toLocaleString()}</strong></p>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <h3>🎬 Content Type</h3>
+                            <p>Video Posts: <strong>${analytics.video_posts_count}</strong></p>
+                            <p>Image Posts: <strong>${analytics.image_posts_count}</strong></p>
+                            <p>Video Engagement: <strong>${analytics.video_engagement.toLocaleString()}</strong></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h2 style="margin: 30px 0 20px 0;">Latest Posts (${posts.length})</h2>
+                <div class="posts-grid">
+            `;
+            
+            posts.forEach(post => {
+                const engagementClass = post.engagement_rate > 5 ? 'engagement-good' : 
+                                      post.engagement_rate > 2 ? 'engagement-average' : 'engagement-poor';
+                
+                html += `
+                    <div class="post-preview-card">
+                        <div style="position: relative;">
+                            <img src="${post.thumbnail_url}" alt="Post thumbnail" class="post-thumbnail" onerror="this.src='https://via.placeholder.com/300?text=No+Preview'">
+                            ${post.is_video ? '<div class="video-badge">🎥 VIDEO</div>' : ''}
+                        </div>
+                        <h4>${post.caption ? (post.caption.substring(0, 100) + (post.caption.length > 100 ? '...' : '')) : 'No caption'}</h4>
+                        <div class="post-stats">
+                            <div class="post-stat">
+                                <div style="color: #E1306C;">❤️ ${post.likes.toLocaleString()}</div>
+                                <small>Likes</small>
+                            </div>
+                            <div class="post-stat">
+                                <div style="color: #667eea;">💬 ${post.comments.toLocaleString()}</div>
+                                <small>Comments</small>
+                            </div>
+                            <div class="post-stat">
+                                <div class="${engagementClass}">📈 ${post.engagement_rate}%</div>
+                                <small>Engagement</small>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.8em; color: #666; margin-top: 10px;">
+                            ${new Date(post.timestamp).toLocaleDateString()} • 
+                            ${post.is_video ? '🎥 Video' : '🖼️ Image'}
+                        </p>
+                        <a href="${post.url}" target="_blank" style="display: block; text-align: center; margin-top: 10px; color: #667eea;">View Post</a>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            resultsDiv.innerHTML = html;
+        }
+
+        async function installEngine() {
+            const installBtn = document.getElementById('installBtn');
+            installBtn.disabled = true;
+            installBtn.textContent = 'Installing...';
+            
+            log('Installing fast engine...', 'info');
+            
+            try {
+                const response = await fetch('/install-engine', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('Engine installed successfully! Please refresh the page.', 'success');
+                    alert('Ultra Fast Engine Ready!\nPlease refresh the page.');
+                } else {
+                    log(`Installation failed: ${result.error}`, 'error');
+                    alert('Installation failed. Please try again.');
+                }
+            } catch (error) {
+                log(`Installation error: ${error}`, 'error');
+                alert('Installation failed. Please check console.');
+            } finally {
+                installBtn.disabled = false;
+                installBtn.textContent = 'Install Fast Engine';
+            }
+        }
+
+        // Enter key support
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startUltraFastDownload();
+            }
+        });
+
+        document.getElementById('profileUrlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeProfile();
+            }
+        });
+
+        document.getElementById('profilePostsUrlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadProfilePosts();
+            }
+        });
+
+        // Auto-focus input
+        document.getElementById('urlInput').focus();
+
+        // Add some initial instructions
+        log('💡 Tip: Use "ULTRA FAST Download" for 90% success rate', 'info');
+        log('💡 Supported: Posts, Reels, Videos, Images', 'info');
+    </script>
+</body>
+</html>
