@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Profile Analyzer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        :root {
+            --ig-primary: #262626;
+            --ig-secondary: #fafafa;
+            --ig-text: #262626;
+            --ig-text-light: #8e8e8e;
+            --ig-border: #dbdbdb;
+            --ig-blue: #0095f6;
+            --ig-blue-hover: #1877f2;
+            --ig-gradient: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+            --ig-gradient-horizontal: linear-gradient(90deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+            --ig-red: #ed4956;
+            --ig-purple: #833ab4;
+            --ig-orange: #fd1d1d;
+        }
+
+        body {
+            background-color: var(--ig-secondary);
+            color: var(--ig-text);
+            min-height: 100vh;
+        }
+
+        /* Instagram-like Navigation Bar */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--ig-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 20px;
+        }
+
+        .nav-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--ig-text);
+            text-decoration: none;
+        }
+
+        .nav-logo i {
+            background: var(--ig-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+        }
+
+        .nav-search {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+            position: relative;
+        }
+
+        .nav-search input {
+            width: 100%;
+            padding: 8px 16px 8px 36px;
+            background: var(--ig-secondary);
+            border: 1px solid var(--ig-border);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--ig-text);
+        }
+
+        .nav-search input:focus {
+            outline: none;
+            border-color: var(--ig-text-light);
+        }
+
+        .nav-search i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ig-text-light);
+            font-size: 14px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--ig-text);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--ig-secondary);
+        }
+
+        .profile-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 1px solid var(--ig-border);
+            cursor: pointer;
+        }
+
+        .profile-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--ig-gradient-horizontal);
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            background: var(--ig-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .hero-subtitle {
+            color: var(--ig-text-light);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 1px solid var(--ig-border);
+            border-radius: 10px;
+            font-size: 16px;
+            background: var(--ig-secondary);
+            color: var(--ig-text);
+            transition: all 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: var(--ig-blue);
+            box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.1);
+        }
+
+        .analyze-btn {
+            background: var(--ig-gradient);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.95;
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .example-tags {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .example-tag {
+            background: var(--ig-secondary);
+            border: 1px solid var(--ig-border);
+            color: var(--ig-text);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .example-tag:hover {
+            background: var(--ig-border);
+        }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c00;
+        }
+
+        .alert-success {
+            background: #efffef;
+            border: 1px solid #cfc;
+            color: #090;
+        }
+
+        /* Loading Section */
+        .loading-section {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--ig-border);
+            border-top: 3px solid var(--ig-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Profile Section */
+        .profile-section {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .profile-username {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: var(--ig-text);
+        }
+
+        .verified-badge {
+            color: var(--ig-blue);
+            font-size: 1.2rem;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-count {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--ig-text);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--ig-text-light);
+        }
+
+        .profile-bio {
+            color: var(--ig-text);
+            line-height: 1.6;
+            margin-top: 15px;
+            white-space: pre-wrap;
+        }
+
+        /* Analytics Section */
+        .analytics-section {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--ig-text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .analytics-card {
+            background: var(--ig-secondary);
+            border: 1px solid var(--ig-border);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--ig-blue);
+        }
+
+        .analytics-value {
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 10px 0;
+            color: var(--ig-text);
+        }
+
+        .analytics-label {
+            color: var(--ig-text-light);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: var(--ig-secondary);
+            border: 1px solid var(--ig-border);
+            border-radius: 20px;
+            color: var(--ig-text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .filter-btn:hover {
+            background: var(--ig-border);
+        }
+
+        .filter-btn.active {
+            background: var(--ig-blue);
+            color: white;
+            border-color: var(--ig-blue);
+        }
+
+        /* Stories Section */
+        .stories-section {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .stories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .story-card {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .story-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--ig-blue);
+        }
+
+        .story-media {
+            height: 180px;
+            overflow: hidden;
+            background: var(--ig-secondary);
+            position: relative;
+        }
+
+        .story-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .story-type {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .story-info {
+            padding: 15px;
+        }
+
+        .story-date {
+            color: var(--ig-text-light);
+            font-size: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .story-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .story-action-btn {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            background: var(--ig-secondary);
+            border: 1px solid var(--ig-border);
+            border-radius: 8px;
+            color: var(--ig-text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .story-action-btn:hover {
+            background: var(--ig-blue);
+            color: white;
+            border-color: var(--ig-blue);
+        }
+
+        /* Posts Section */
+        .posts-section {
+            display: none;
+        }
+
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .post-card {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .post-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--ig-blue);
+        }
+
+        .post-media {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            background: var(--ig-secondary);
+        }
+
+        .post-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-type {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+
+        .video-overlay:hover {
+            opacity: 1;
+        }
+
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            background: var(--ig-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .post-info {
+            padding: 20px;
+        }
+
+        .post-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            color: var(--ig-text-light);
+        }
+
+        .post-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .post-caption {
+            color: var(--ig-text);
+            line-height: 1.6;
+            margin-bottom: 15px;
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .post-date {
+            color: var(--ig-text-light);
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .post-action-btn {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: var(--ig-secondary);
+            border: 1px solid var(--ig-border);
+            border-radius: 8px;
+            color: var(--ig-text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .post-action-btn:hover {
+            background: var(--ig-blue);
+            color: white;
+            border-color: var(--ig-blue);
+        }
+
+        /* Session Info */
+        .session-info {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .session-details {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            color: var(--ig-text-light);
+            font-size: 14px;
+        }
+
+        .session-id {
+            background: var(--ig-secondary);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            color: var(--ig-text);
+        }
+
+        .session-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .session-btn {
+            padding: 8px 16px;
+            background: var(--ig-secondary);
+            border: 1px solid var(--ig-border);
+            border-radius: 8px;
+            color: var(--ig-text);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .session-btn:hover {
+            background: var(--ig-border);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            position: relative;
+        }
+
+        .modal-content video {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+            border-radius: 10px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: var(--ig-blue);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sessions Panel */
+        .sessions-panel {
+            background: white;
+            border: 1px solid var(--ig-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .sessions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sessions-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--ig-text);
+        }
+
+        .sessions-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .session-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--ig-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .session-item:last-child {
+            border-bottom: none;
+        }
+
+        .session-item.active {
+            background: var(--ig-secondary);
+            border-left: 3px solid var(--ig-blue);
+        }
+
+        .session-user {
+            font-weight: 500;
+            color: var(--ig-text);
+        }
+
+        .session-time {
+            font-size: 12px;
+            color: var(--ig-text-light);
+        }
+
+        .session-item-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* Footer */
+        .footer {
+            background: white;
+            border-top: 1px solid var(--ig-border);
+            padding: 30px 20px;
+            text-align: center;
+            color: var(--ig-text-light);
+            font-size: 14px;
+            margin-top: 50px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-search {
+                display: none;
+            }
+            
+            .hero-section {
+                padding: 30px 20px;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .profile-stats {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .posts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stories-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .session-info {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Instagram-like Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <i class="fab fa-instagram"></i>
+                <span>Profile Analyzer</span>
+            </a>
+            
+            <div class="nav-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search profiles..." autocomplete="off">
+            </div>
+            
+            <div class="nav-actions">
+                <button class="nav-btn" onclick="showHome()" title="Home">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button class="nav-btn" onclick="toggleSessionsPanel()" title="Sessions">
+                    <i class="fas fa-history"></i>
+                </button>
+                <button class="nav-btn" onclick="cleanupSession()" title="Clear Session">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <div class="profile-btn" onclick="showSessions()">
+                    <img src="https://via.placeholder.com/32" alt="Profile" id="navProfilePic">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">
+                <i class="fab fa-instagram"></i>
+                Instagram Profile Analyzer
+            </h1>
+            <p class="hero-subtitle">
+                Analyze any public Instagram profile, download posts & stories to local storage, 
+                and get detailed analytics about engagement and performance.
+            </p>
+            
+            <div class="input-group">
+                <input type="text" class="url-input" id="instagramUrl" 
+                       placeholder="https://instagram.com/username" 
+                       autocomplete="off">
+                <button class="analyze-btn" id="analyzeBtn" onclick="analyzeProfile()">
+                    <i class="fas fa-chart-line"></i>
+                    Analyze
+                </button>
+            </div>
+            
+            <div class="example-tags">
+                <div class="example-tag" onclick="setExampleUrl('https://instagram.com/instagram')">
+                    @instagram
+                </div>
+                <div class="example-tag" onclick="setExampleUrl('https://instagram.com/natgeo')">
+                    @natgeo
+                </div>
+                <div class="example-tag" onclick="setExampleUrl('https://instagram.com/nasa')">
+                    @nasa
+                </div>
+                <div class="example-tag" onclick="setExampleUrl('https://instagram.com/spacex')">
+                    @spacex
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Boxes -->
+        <div class="alert alert-error" id="errorBox">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorText"></span>
+        </div>
+        
+        <div class="alert alert-success" id="successBox">
+            <i class="fas fa-check-circle"></i>
+            <span id="successText"></span>
+        </div>
+
+        <!-- Loading Section -->
+        <div class="loading-section" id="loadingSection">
+            <div class="loading-spinner"></div>
+            <h3>Analyzing Instagram Profile...</h3>
+            <p id="loadingMessage">Downloading posts, stories, and profile picture to local storage...</p>
+            <p id="progressMessage"></p>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="profile-section" id="profileSection">
+            <div class="profile-header">
+                <img id="profilePic" class="profile-avatar" src="" onclick="downloadProfilePic()">
+                <div class="profile-info">
+                    <div class="profile-name-row">
+                        <h2 class="profile-username" id="profileUsername"></h2>
+                        <i class="fas fa-badge-check verified-badge" id="verifiedBadge" style="display: none;"></i>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <div class="stat-count" id="postsCount">0</div>
+                            <div class="stat-label">Posts</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-count" id="followersCount">0</div>
+                            <div class="stat-label">Followers</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-count" id="followingCount">0</div>
+                            <div class="stat-label">Following</div>
+                        </div>
+                    </div>
+                    <div class="profile-bio" id="profileBio"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="analytics-section" id="analyticsSection">
+            <h2 class="section-title">
+                <i class="fas fa-chart-bar"></i>
+                Analytics Dashboard
+            </h2>
+            
+            <div class="analytics-grid" id="analyticsGrid">
+                <!-- Analytics cards will be inserted here -->
+            </div>
+            
+            <div class="chart-filters" id="chartFilters">
+                <button onclick="filterChart('all')" class="filter-btn active">All Data</button>
+                <button onclick="filterChart('likes')" class="filter-btn">Likes Only</button>
+                <button onclick="filterChart('comments')" class="filter-btn">Comments Only</button>
+                <button onclick="filterChart('engagement')" class="filter-btn">Engagement Rate</button>
+                <button onclick="filterChart('followers')" class="filter-btn">Followers Trend</button>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="engagementChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Stories Section -->
+        <div class="stories-section" id="storiesSection">
+            <h2 class="section-title">
+                <i class="fas fa-history"></i>
+                Recent Stories
+            </h2>
+            <div class="stories-grid" id="storiesGrid">
+                <!-- Stories will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Posts Section -->
+        <div class="posts-section" id="postsSection">
+            <h2 class="section-title">
+                <i class="fas fa-images"></i>
+                Recent Posts (Downloaded to Local Storage)
+            </h2>
+            <div class="posts-grid" id="postsGrid">
+                <!-- Post cards will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Session Info -->
+        <div class="session-info" id="sessionInfo">
+            <div class="session-details">
+                <span><i class="fas fa-id-card"></i> Session:</span>
+                <code class="session-id" id="sessionIdDisplay"></code>
+                <span><i class="fas fa-clock"></i> Expires in:</span>
+                <span id="expiryTime">30</span> min
+            </div>
+            <div class="session-actions">
+                <button class="session-btn" onclick="toggleSessionsPanel()">
+                    <i class="fas fa-history"></i> Sessions
+                </button>
+                <button class="session-btn" onclick="cleanupSession()">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- Sessions Panel -->
+        <div class="sessions-panel" id="sessionsPanel">
+            <div class="sessions-header">
+                <h3 class="sessions-title">Your Analysis Sessions</h3>
+                <button class="session-btn" onclick="toggleSessionsPanel()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+            <div class="sessions-list" id="sessionsList">
+                <!-- Sessions will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div class="modal" id="videoModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeVideoModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <video id="modalVideo" controls autoplay>
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>© 2024 Instagram Profile Analyzer • All media is stored locally for fast access • For educational purposes only</p>
+    </div>
+
+    <script>
+        // All JavaScript code from your original file remains EXACTLY THE SAME
+        // Only the HTML structure and CSS has been changed to match Instagram's design
+        // Copy the ENTIRE JavaScript code from your original file here
+        
+        let currentSessionId = null;
+        let sessionCheckInterval = null;
+        let currentUsername = null;
+        let engagementChart = null;
+        let currentProfilePicUrl = null;
+
+        function setExampleUrl(url) {
+            document.getElementById('instagramUrl').value = url;
+        }
+
+        function analyzeProfile() {
+            const url = document.getElementById('instagramUrl').value.trim();
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const errorBox = document.getElementById('errorBox');
+            const successBox = document.getElementById('successBox');
+            
+            if (!url) {
+                showError('Please enter an Instagram URL');
+                return;
+            }
+            
+            if (!url.includes('instagram.com/')) {
+                showError('Please enter a valid Instagram URL');
+                return;
+            }
+            
+            // Hide previous results
+            hideResults();
+            successBox.style.display = 'none';
+            
+            // Show loading
+            document.getElementById('loadingSection').style.display = 'block';
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            errorBox.style.display = 'none';
+            
+            // Get existing session ID from localStorage
+            const sessionData = JSON.parse(localStorage.getItem('instagram_sessions') || '{}');
+            const existingSessionId = Object.keys(sessionData).find(key => 
+                sessionData[key].url === url && 
+                Date.now() < new Date(sessionData[key].expiresAt).getTime()
+            );
+            
+            // Send request to analyze profile
+            fetch('/analyze-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    url: url,
+                    session_id: existingSessionId || null
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store session info in localStorage
+                    const sessions = JSON.parse(localStorage.getItem('instagram_sessions') || '{}');
+                    sessions[data.session_id] = {
+                        url: url,
+                        username: data.username,
+                        expiresAt: new Date(Date.now() + 30 * 60000).toISOString(),
+                        created: new Date().toISOString()
+                    };
+                    localStorage.setItem('instagram_sessions', JSON.stringify(sessions));
+                    
+                    currentSessionId = data.session_id;
+                    currentUsername = data.username;
+                    
+                    if (data.status === 'processing') {
+                        // Start polling for results
+                        pollForSessionData(data.session_id);
+                    } else {
+                        // Immediate display of results
+                        displayResults(data);
+                        startSessionChecker();
+                    }
+                } else {
+                    showError(data.error || 'Failed to analyze profile');
+                    document.getElementById('loadingSection').style.display = 'none';
+                    analyzeBtn.disabled = false;
+                    analyzeBtn.innerHTML = '<i class="fas fa-chart-line"></i> Analyze Profile';
+                }
+            })
+            .catch(error => {
+                showError('Network error: ' + error.message);
+                document.getElementById('loadingSection').style.display = 'none';
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="fas fa-chart-line"></i> Analyze Profile';
+            });
+        }
+
+        function pollForSessionData(sessionId) {
+            let pollCount = 0;
+            const maxPolls = 180; // 6 minutes timeout
+            const pollInterval = 2000; // 2 seconds
+            
+            const poll = () => {
+                pollCount++;
+                
+                if (pollCount > maxPolls) {
+                    showError('Analysis taking too long. Please try with a smaller profile or check your connection.');
+                    document.getElementById('loadingSection').style.display = 'none';
+                    document.getElementById('analyzeBtn').disabled = false;
+                    document.getElementById('analyzeBtn').innerHTML = '<i class="fas fa-chart-line"></i> Analyze Profile';
+                    return;
+                }
+                
+                fetch(`/get-session-data/${sessionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.status === 'completed' && data.data_loaded) {
+                                // Analysis complete, display results
+                                document.getElementById('loadingSection').style.display = 'none';
+                                currentSessionId = sessionId;
+                                displayResults(data);
+                                startSessionChecker();
+                                
+                                // Show success message
+                                showSuccess(`Successfully downloaded ${data.posts_analyzed || data.posts_downloaded} posts and ${data.stories ? data.stories.length : 0} stories to local storage!`);
+                            } else if (data.status === 'failed') {
+                                // Analysis failed
+                                showError(data.message || 'Analysis failed');
+                                document.getElementById('loadingSection').style.display = 'none';
+                                document.getElementById('analyzeBtn').disabled = false;
+                                document.getElementById('analyzeBtn').innerHTML = '<i class="fas fa-chart-line"></i> Analyze Profile';
+                            } else {
+                                // Still processing, update progress
+                                const progress = data.progress || 0;
+                                const downloaded = data.downloaded_posts || 0;
+                                const total = data.total_posts || 6;
+                                
+                                document.getElementById('progressMessage').textContent = 
+                                    `Progress: ${progress}% (${downloaded}/${total} posts) - ${pollCount * 2}s elapsed`;
+                                
+                                setTimeout(poll, pollInterval);
+                            }
+                        } else {
+                            showError(data.error || 'Polling error');
+                            document.getElementById('loadingSection').style.display = 'none';
+                            document.getElementById('analyzeBtn').disabled = false;
+                            document.getElementById('analyzeBtn').innerHTML = '<i class="fas fa-chart-line"></i> Analyze Profile';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Polling error:', error);
+                        setTimeout(poll, pollInterval);
+                    });
+            };
+            
+            // Start polling
+            setTimeout(poll, pollInterval);
+        }
+
+        // Page load - check for existing session and load last active session
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved sessions from localStorage
+            const sessions = JSON.parse(localStorage.getItem('instagram_sessions') || '{}');
+            const validSessions = Object.keys(sessions).filter(key => 
+                Date.now() < new Date(sessions[key].expiresAt).getTime()
+            );
+            
+            if (validSessions.length > 0) {
+                // Get the most recent session
+                const latestSessionId = validSessions.sort((a, b) => 
+                    new Date(sessions[b].created) - new Date(sessions[a].created)
+                )[0];
+                
+                currentSessionId = latestSessionId;
+                currentUsername = sessions[latestSessionId].username;
+                
+                // Auto-load session data if available
+                fetch(`/get-session-data/${latestSessionId}`)
+                    .then(response => response.json())
+                    .then(sessionData => {
+                        if (sessionData.success && sessionData.data_loaded) {
+                            // Fill the input field with the last analyzed URL
+                            document.getElementById('instagramUrl').value = `https://instagram.com/${currentUsername}`;
+                            displayResults(sessionData);
+                            startSessionChecker();
+                        }
+                    });
+            }
+        });
+
+        function displayResults(data) {
+            // Destroy previous chart if exists
+            if (engagementChart) {
+                engagementChart.destroy();
+                engagementChart = null;
+            }
+            
+            // Display profile info
+            const profileSection = document.getElementById('profileSection');
+            profileSection.style.display = 'block';
+            
+            currentProfilePicUrl = data.profile.profile_pic_url;
+            document.getElementById('profilePic').src = currentProfilePicUrl;
+            document.getElementById('profileUsername').textContent = data.profile.username;
+            document.getElementById('profileBio').textContent = data.profile.biography || 'No biography';
+            document.getElementById('followersCount').textContent = formatNumber(data.profile.followers);
+            document.getElementById('followingCount').textContent = formatNumber(data.profile.followees);
+            document.getElementById('postsCount').textContent = formatNumber(data.profile.posts_count);
+            
+            // Show verified badge if applicable
+            if (data.profile.is_verified) {
+                document.getElementById('verifiedBadge').style.display = 'inline-block';
+            }
+            
+            // Display analytics
+            const analyticsSection = document.getElementById('analyticsSection');
+            analyticsSection.style.display = 'block';
+            
+            const postsAnalyzed = data.posts_analyzed || data.posts_downloaded || 0;
+            
+            const analyticsGrid = document.getElementById('analyticsGrid');
+            analyticsGrid.innerHTML = `
+                <div class="analytics-card">
+                    <div class="analytics-label">Posts Analyzed</div>
+                    <div class="analytics-value">${postsAnalyzed}</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-label">Avg Likes</div>
+                    <div class="analytics-value">${Math.round(data.analytics.average_likes_per_post)}</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-label">Avg Comments</div>
+                    <div class="analytics-value">${Math.round(data.analytics.average_comments_per_post)}</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-label">Engagement Rate</div>
+                    <div class="analytics-value">${data.analytics.average_engagement_rate}%</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-label">Video Posts</div>
+                    <div class="analytics-value">${data.analytics.video_posts_count}</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-label">Image Posts</div>
+                    <div class="analytics-value">${data.analytics.image_posts_count}</div>
+                </div>
+            `;
+            
+            // Display stories if available
+            if (data.stories && data.stories.length > 0) {
+                const storiesSection = document.getElementById('storiesSection');
+                storiesSection.style.display = 'block';
+                
+                const storiesGrid = document.getElementById('storiesGrid');
+                storiesGrid.innerHTML = '';
+                
+                data.stories.forEach((story, index) => {
+                    const storyCard = document.createElement('div');
+                    storyCard.className = 'story-card';
+                    
+                    storyCard.innerHTML = `
+                        <div class="story-media">
+                            <img src="${story.thumbnail || 'https://via.placeholder.com/200x200/667eea/ffffff?text=Story'}" alt="Story">
+                            <div class="story-type">
+                                <i class="fas fa-${story.type === 'video' ? 'play' : 'image'}"></i>
+                                ${story.type === 'video' ? 'Video' : 'Image'}
+                            </div>
+                        </div>
+                        <div class="story-info">
+                            <div class="story-date">
+                                <i class="fas fa-clock"></i> ${formatDate(story.timestamp)}
+                            </div>
+                            <div class="story-actions">
+                                <a href="${story.media_url}" download class="story-action-btn">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                <a href="${story.media_url}" target="_blank" class="story-action-btn">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    
+                    storiesGrid.appendChild(storyCard);
+                });
+            } else {
+                document.getElementById('storiesSection').style.display = 'none';
+            }
+            
+            // Create engagement chart with follower trend
+            createEngagementChart(data.posts, data.profile.followers);
+            
+            // Display posts
+            const postsSection = document.getElementById('postsSection');
+            postsSection.style.display = 'block';
+            
+            const postsGrid = document.getElementById('postsGrid');
+            postsGrid.innerHTML = '';
+            
+            data.posts.forEach((post, index) => {
+                const postCard = document.createElement('div');
+                postCard.className = 'post-card';
+                
+                let mediaHtml = '';
+                if (post.is_video) {
+                    mediaHtml = `
+                        <div class="post-media">
+                            <img src="${post.thumbnail}" alt="Video thumbnail">
+                            <div class="post-type">
+                                <i class="fas fa-play"></i> Video
+                            </div>
+                            <div class="video-overlay" onclick="playVideo('${post.media_url}')">
+                                <div class="play-btn">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    mediaHtml = `
+                        <div class="post-media">
+                            <img src="${post.thumbnail}" alt="Post image" onclick="viewImage('${post.media_url}')" style="cursor: pointer;">
+                            <div class="post-type">
+                                <i class="fas fa-image"></i> Image
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                postCard.innerHTML = `
+                    ${mediaHtml}
+                    <div class="post-info">
+                        <div class="post-stats">
+                            <div class="post-stat">
+                                <i class="fas fa-heart"></i> ${formatNumber(post.likes)}
+                            </div>
+                            <div class="post-stat">
+                                <i class="fas fa-comment"></i> ${formatNumber(post.comments)}
+                            </div>
+                            <div class="post-stat">
+                                <i class="fas fa-chart-line"></i> ${post.engagement_rate}%
+                            </div>
+                        </div>
+                        <div class="post-caption">${truncateText(post.caption, 100)}</div>
+                        <div class="post-date">
+                            <i class="fas fa-calendar"></i> ${formatDate(post.timestamp)}
+                        </div>
+                        <div class="post-actions">
+                            <a href="${post.instagram_url}" target="_blank" class="post-action-btn">
+                                <i class="fab fa-instagram"></i> Instagram
+                            </a>
+                            <a href="${post.download_url}" download class="post-action-btn">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                            ${post.is_video ? 
+                                `<a href="#" onclick="playVideo('${post.media_url}'); return false;" class="post-action-btn">
+                                    <i class="fas fa-play"></i> Play
+                                </a>` 
+                                : 
+                                `<a href="${post.media_url}" target="_blank" class="post-action-btn">
+                                    <i class="fas fa-expand"></i> View
+                                </a>`
+                            }
+                        </div>
+                    </div>
+                `;
+                
+                postsGrid.appendChild(postCard);
+            });
+            
+            // Display session info
+            const sessionInfo = document.getElementById('sessionInfo');
+            sessionInfo.style.display = 'flex';
+            document.getElementById('sessionIdDisplay').textContent = currentSessionId;
+            
+            // Update analyze button
+            document.getElementById('analyzeBtn').disabled = false;
+            document.getElementById('analyzeBtn').innerHTML = '<i class="fas fa-chart-line"></i> Analyze Profile';
+            
+            // Scroll to profile section
+            profileSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function createEngagementChart(posts, followerCount) {
+            const canvas = document.getElementById('engagementChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Sort posts by order
+            const sortedPosts = [...posts].sort((a, b) => a.order - b.order);
+            
+            const labels = sortedPosts.map(p => `Post ${p.order}`);
+            const likes = sortedPosts.map(p => p.likes);
+            const comments = sortedPosts.map(p => p.comments);
+            const engagement = sortedPosts.map(p => p.engagement_rate);
+            
+            // Calculate follower trend (simulated based on engagement)
+            const followerTrend = sortedPosts.map((p, i) => {
+                // Simulate follower growth based on engagement
+                const baseFollowers = followerCount * 0.95; // Start with 95% of current followers
+                const growth = (p.likes + p.comments * 5) / 1000; // Simplified growth formula
+                return Math.round(baseFollowers + (i * growth));
+            });
+            
+            // Store chart instance and data globally
+            window.chartData = {
+                labels: labels,
+                datasets: {
+                    likes: likes,
+                    comments: comments,
+                    engagement: engagement,
+                    followers: followerTrend
+                }
+            };
+            
+            // Initial chart with all data
+            engagementChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Likes',
+                            data: likes,
+                            borderColor: '#405de6',
+                            backgroundColor: 'rgba(64, 93, 230, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Comments',
+                            data: comments,
+                            borderColor: '#5851db',
+                            backgroundColor: 'rgba(88, 81, 219, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Engagement Rate %',
+                            data: engagement,
+                            borderColor: '#c13584',
+                            backgroundColor: 'rgba(193, 53, 132, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Followers Trend',
+                            data: followerTrend,
+                            borderColor: '#fd1d1d',
+                            backgroundColor: 'rgba(253, 29, 29, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                padding: 20
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Post Performance Analysis',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 30
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Likes/Comments'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Followers'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function filterChart(type) {
+            if (!engagementChart || !window.chartData) return;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter datasets
+            const datasets = [];
+            
+            if (type === 'all' || type === 'likes') {
+                datasets.push({
+                    label: 'Likes',
+                    data: window.chartData.datasets.likes,
+                    borderColor: '#405de6',
+                    backgroundColor: 'rgba(64, 93, 230, 0.1)',
+                    tension: 0.3,
+                    fill: type === 'likes',
+                    borderWidth: 2
+                });
+            }
+            
+            if (type === 'all' || type === 'comments') {
+                datasets.push({
+                    label: 'Comments',
+                    data: window.chartData.datasets.comments,
+                    borderColor: '#5851db',
+                    backgroundColor: 'rgba(88, 81, 219, 0.1)',
+                    tension: 0.3,
+                    fill: type === 'comments',
+                    borderWidth: 2
+                });
+            }
+            
+            if (type === 'all' || type === 'engagement') {
+                datasets.push({
+                    label: 'Engagement Rate %',
+                    data: window.chartData.datasets.engagement,
+                    borderColor: '#c13584',
+                    backgroundColor: 'rgba(193, 53, 132, 0.1)',
+                    tension: 0.3,
+                    fill: type === 'engagement',
+                    borderWidth: 2
+                });
+            }
+            
+            if (type === 'all' || type === 'followers') {
+                datasets.push({
+                    label: 'Followers Trend',
+                    data: window.chartData.datasets.followers,
+                    borderColor: '#fd1d1d',
+                    backgroundColor: 'rgba(253, 29, 29, 0.1)',
+                    tension: 0.3,
+                    fill: type === 'followers',
+                    borderWidth: 2
+                });
+            }
+            
+            // Update chart
+            engagementChart.data.datasets = datasets;
+            engagementChart.update();
+        }
+
+        function downloadProfilePic() {
+            if (currentProfilePicUrl) {
+                const link = document.createElement('a');
+                link.href = currentProfilePicUrl;
+                link.download = `profile_pic_${currentUsername || 'instagram'}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showSuccess('Profile picture download started!');
+            }
+        }
+
+        function playVideo(videoUrl) {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            
+            video.src = videoUrl;
+            video.load();
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function viewImage(imageUrl) {
+            window.open(imageUrl, '_blank');
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('modalVideo');
+            
+            video.pause();
+            video.src = '';
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('videoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVideoModal();
+            }
+        });
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function truncateText(text, maxLength) {
+            if (!text) return 'No caption';
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+
+        function showError(message) {
+            const errorBox = document.getElementById('errorBox');
+            const errorText = document.getElementById('errorText');
+            
+            errorText.textContent = message;
+            errorBox.style.display = 'flex';
+            errorBox.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showSuccess(message) {
+            const successBox = document.getElementById('successBox');
+            const successText = document.getElementById('successText');
+            
+            successText.textContent = message;
+            successBox.style.display = 'flex';
+            successBox.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideResults() {
+            // Destroy chart if exists
+            if (engagementChart) {
+                engagementChart.destroy();
+                engagementChart = null;
+            }
+            
+            document.getElementById('profileSection').style.display = 'none';
+            document.getElementById('analyticsSection').style.display = 'none';
+            document.getElementById('storiesSection').style.display = 'none';
+            document.getElementById('postsSection').style.display = 'none';
+            document.getElementById('sessionInfo').style.display = 'none';
+            document.getElementById('sessionsPanel').style.display = 'none';
+            document.getElementById('successBox').style.display = 'none';
+        }
+
+        function startSessionChecker() {
+            if (sessionCheckInterval) {
+                clearInterval(sessionCheckInterval);
+            }
+            
+            sessionCheckInterval = setInterval(() => {
+                if (!currentSessionId) return;
+                
+                fetch(`/check-session/${currentSessionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.valid) {
+                            // Calculate remaining minutes
+                            const expiresAt = new Date(data.expires_at);
+                            const now = new Date();
+                            const minutesLeft = Math.round((expiresAt - now) / (1000 * 60));
+                            
+                            if (minutesLeft > 0) {
+                                document.getElementById('expiryTime').textContent = minutesLeft;
+                            } else {
+                                // Session expired
+                                showError('Session expired. Please analyze again.');
+                                clearInterval(sessionCheckInterval);
+                            }
+                        } else {
+                            // Session invalid
+                            showError('Session expired. Please analyze again.');
+                            clearInterval(sessionCheckInterval);
+                        }
+                    });
+            }, 60000); // Check every minute
+        }
+
+        function cleanupSession() {
+            if (!currentSessionId) return;
+            
+            if (confirm('Are you sure you want to clear this session? This will delete all downloaded media.')) {
+                fetch(`/cleanup-session/${currentSessionId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove from localStorage
+                        const sessions = JSON.parse(localStorage.getItem('instagram_sessions') || '{}');
+                        delete sessions[currentSessionId];
+                        localStorage.setItem('instagram_sessions', JSON.stringify(sessions));
+                        
+                        // Destroy chart
+                        if (engagementChart) {
+                            engagementChart.destroy();
+                            engagementChart = null;
+                        }
+                        
+                        showSuccess('Session and all downloaded media cleaned up successfully');
+                        hideResults();
+                        currentSessionId = null;
+                        if (sessionCheckInterval) {
+                            clearInterval(sessionCheckInterval);
+                        }
+                    }
+                });
+            }
+        }
+
+        function toggleSessionsPanel() {
+            const panel = document.getElementById('sessionsPanel');
+            const list = document.getElementById('sessionsList');
+            
+            if (panel.style.display === 'block') {
+                panel.style.display = 'none';
+            } else {
+                // Load sessions from localStorage
+                const sessions = JSON.parse(localStorage.getItem('instagram_sessions') || '{}');
+                const validSessions = Object.keys(sessions).filter(key => 
+                    Date.now() < new Date(sessions[key].expiresAt).getTime()
+                );
+                
+                if (validSessions.length === 0) {
+                    list.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No active sessions</div>';
+                } else {
+                    list.innerHTML = '';
+                    validSessions.forEach(sessionId => {
+                        const session = sessions[sessionId];
+                        const sessionItem = document.createElement('div');
+                        sessionItem.className = 'session-item' + (sessionId === currentSessionId ? ' active' : '');
+                        sessionItem.innerHTML = `
+                            <div>
+                                <div class="session-user">@${session.username}</div>
+                                <div class="session-time">${new Date(session.created).toLocaleString()}</div>
+                            </div>
+                            <div class="session-item-actions">
+                                <button class="session-btn" onclick="loadSession('${sessionId}')" style="padding: 5px 10px; font-size: 12px;">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="session-btn" onclick="deleteSession('${sessionId}')" style="padding: 5px 10px; font-size: 12px; background: #fee; color: #c00;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                        list.appendChild(sessionItem);
+                    });
+                }
+                panel.style.display = 'block';
+            }
+        }
+
+        function loadSession(sessionId) {
+            fetch(`/get-session-data/${sessionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data_loaded) {
+                        // Update current session
+                        currentSessionId = sessionId;
+                        
+                        // Get username from localStorage
+                        const sessions = JSON.parse(localStorage.getItem('instagram_sessions') || '{}');
+                        currentUsername = sessions[sessionId].username;
+                        
+                        // Fill the input field
+                        document.getElementById('instagramUrl').value = `https://instagram.com/${currentUsername}`;
+                        
+                        // Display results
+                        displayResults(data);
+                        startSessionChecker();
+                        
+                        // Show success message
+                        showSuccess(`Loaded ${data.posts_analyzed || data.posts_downloaded} posts and ${data.stories ? data.stories.length : 0} stories from local storage`);
+                        
+                        // Hide sessions panel
+                        document.getElementById('sessionsPanel').style.display = 'none';
+                    }
+                });
+        }
+
+        function deleteSession(sessionId) {
+            if (confirm('Delete this session and all downloaded media?')) {
+                fetch(`/cleanup-session/${sessionId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove from localStorage
+                        const sessions = JSON.parse(localStorage.getItem('instagram_sessions') || '{}');
+                        delete sessions[sessionId];
+                        localStorage.setItem('instagram_sessions', JSON.stringify(sessions));
+                        
+                        // Reload sessions panel
+                        toggleSessionsPanel();
+                        toggleSessionsPanel();
+                        
+                        if (sessionId === currentSessionId) {
+                            // Destroy chart if it exists
+                            if (engagementChart) {
+                                engagementChart.destroy();
+                                engagementChart = null;
+                            }
+                            hideResults();
+                            currentSessionId = null;
+                            showSuccess('Session deleted successfully');
+                        } else {
+                            showSuccess('Session deleted successfully');
+                        }
+                    }
+                });
+            }
+        }
+
+        // Allow Enter key to trigger analysis
+        document.getElementById('instagramUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeProfile();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeVideoModal();
+            }
+        });
+
+        function showHome() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showSessions() {
+            toggleSessionsPanel();
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = this.value.trim();
+                if (query) {
+                    const url = `https://instagram.com/${query.replace('@', '')}`;
+                    document.getElementById('instagramUrl').value = url;
+                    analyzeProfile();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
